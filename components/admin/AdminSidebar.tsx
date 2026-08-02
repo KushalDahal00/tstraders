@@ -12,6 +12,7 @@ import {
   LogOut,
   Store,
   ShieldCheck,
+  ClipboardList,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -32,6 +33,7 @@ export function AdminSidebar() {
 
   const navItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Orders', href: '/admin/orders', icon: ClipboardList },
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Add Product', href: '/admin/products/new', icon: PlusCircle },
     { name: 'Categories', href: '/admin/categories', icon: FolderTree },

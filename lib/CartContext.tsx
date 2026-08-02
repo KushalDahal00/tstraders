@@ -112,8 +112,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, 0);
 
   const placeOrder = async (details: CustomerOrderDetails): Promise<Order> => {
+    const orderId = `ORD-${Date.now().toString().slice(-8)}`;
     const newOrder: Order = {
-      id: `ORD-${Date.now().toString().slice(-6)}`,
+      id: orderId,
       userEmail: user?.email || details.email,
       customerDetails: details,
       items: [...cart],
@@ -122,7 +123,39 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       created_at: new Date().toISOString(),
     };
 
-    // Save order to localStorage
+    // Save order to Supabase
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const supabase = createClient();
+      if (supabase) {
+        await supabase.from('orders').insert({
+          id: orderId,
+          customer_name: details.fullName,
+          customer_email: details.email,
+          customer_phone: details.phone,
+          delivery_address: details.deliveryAddress,
+          city: details.city,
+          notes: details.notes || null,
+          payment_method: details.paymentMethod,
+          items: cart.map((item) => ({
+            product_id: item.product.id,
+            product_name: item.product.name,
+            product_sku: item.product.sku,
+            product_image: item.product.main_image,
+            size: item.size,
+            quantity: item.quantity,
+            unit_price: item.product.discount_price ?? item.product.price,
+            subtotal: (item.product.discount_price ?? item.product.price) * item.quantity,
+          })),
+          total_amount: totalAmount,
+          status: 'pending',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to save order to Supabase, saving locally:', err);
+    }
+
+    // Always also save to localStorage as backup
     if (typeof window !== 'undefined') {
       const existingOrdersRaw = localStorage.getItem('ts_orders');
       const existingOrders: Order[] = existingOrdersRaw ? JSON.parse(existingOrdersRaw) : [];
@@ -133,6 +166,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     clearCart();
     return newOrder;
   };
+
 
   return (
     <CartContext.Provider
