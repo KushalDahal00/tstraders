@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { createClient } from '@/lib/supabase/client';
 import {
   ClipboardList,
   Phone,
@@ -51,6 +50,18 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'bg-rose-950 text-rose-400 border-rose-800', icon: XCircle },
 };
 
+/** Admin-authenticated fetch helper — sends the secret header to the API route */
+async function adminFetch(input: RequestInfo, init: RequestInit = {}) {
+  return fetch(input, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-token': 'ts-admin-authenticated',
+      ...(init.headers ?? {}),
+    },
+  });
+}
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<DBOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,13 +71,17 @@ export default function AdminOrdersPage() {
 
   async function loadOrders() {
     setLoading(true);
-    const supabase = createClient();
-    if (!supabase) { setLoading(false); return; }
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error && data) setOrders(data as DBOrder[]);
+    try {
+      const res = await adminFetch('/api/admin/orders');
+      const json = await res.json();
+      if (res.ok && json.orders) {
+        setOrders(json.orders as DBOrder[]);
+      } else {
+        console.error('Failed to load orders:', json.error);
+      }
+    } catch (err) {
+      console.error('Error loading orders:', err);
+    }
     setLoading(false);
   }
 
@@ -74,13 +89,22 @@ export default function AdminOrdersPage() {
 
   const updateStatus = async (orderId: string, newStatus: DBOrder['status']) => {
     setUpdatingId(orderId);
-    const supabase = createClient();
-    if (supabase) {
-      await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+    try {
+      const res = await adminFetch('/api/admin/orders', {
+        method: 'PATCH',
+        body: JSON.stringify({ id: orderId, status: newStatus }),
+      });
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+        );
+      } else {
+        const json = await res.json();
+        console.error('Failed to update status:', json.error);
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
     }
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    );
     setUpdatingId(null);
   };
 

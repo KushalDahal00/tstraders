@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, ShieldCheck, ArrowDownRight } from 'lucide-react';
+import { ArrowRight, Sparkles, Footprints, ShieldCheck, Zap } from 'lucide-react';
 import { getStoreSettings, StoreSettings, DEFAULT_SETTINGS } from '@/lib/store';
 
 export function Hero() {
@@ -28,112 +28,105 @@ export function Hero() {
   const taglineLast = taglineParts[taglineParts.length - 1];
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-[#09090b] border-b border-zinc-800/60">
-      {/* Dynamic Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-zinc-800/40 via-[#09090b] to-[#09090b]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#27272a15_1px,transparent_1px),linear-gradient(to_bottom,#27272a15_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)] opacity-30" />
+    <section className="relative bg-cream border-b-[3.5px] border-brutal overflow-hidden py-12 sm:py-20">
+      {/* Background Dot Pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(#0A0A0A_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
           {/* Left Hero Content */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-7 space-y-7 text-left z-10 will-change-transform"
-          >
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 border border-zinc-800 bg-zinc-900/80 text-xs text-zinc-300 font-mono tracking-widest uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Official Retailer &amp; Footwear Specialist</span>
+          <div className="lg:col-span-7 space-y-6 text-left z-10">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-brutal-yellow text-brutal border-[2.5px] border-brutal font-mono font-bold text-xs uppercase shadow-brutal-sm">
+              <Zap className="w-4 h-4 fill-brutal" />
+              <span>Official Retailer & Footwear Specialist</span>
             </div>
 
-            <div className="space-y-3">
-              <span className="text-xs font-mono uppercase tracking-[0.25em] text-zinc-400 block">
-                {settings.storeName || 'T.S TRADERS'}
+            <div className="space-y-2">
+              <span className="text-xs font-mono font-bold uppercase tracking-[0.2em] text-brutal-muted block">
+                // {settings.storeName || 'T.S TRADERS'}
               </span>
-              <h1 className="text-4xl sm:text-6xl xl:text-7xl font-serif font-black tracking-tight text-white leading-[1.08]">
+              <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tight text-brutal uppercase leading-[0.95]">
                 {taglineMain && (
                   <>
                     {taglineMain} <br />
                   </>
                 )}
-                <span className="text-gradient">{taglineLast}</span>
+                <span className="bg-brutal-yellow px-2 py-0.5 border-[3px] border-brutal inline-block rotate-[-1deg] shadow-brutal-sm">
+                  {taglineLast}
+                </span>
               </h1>
             </div>
 
-            <p className="text-base sm:text-lg text-zinc-400 font-light max-w-xl leading-relaxed">
+            <p className="text-base sm:text-lg text-brutal-muted font-medium max-w-xl leading-relaxed border-l-4 border-brutal pl-4 py-1">
               {settings.heroSubtitle || 'Discover timeless silhouettes, luxury leather craftsmanship, and high-performance footwear engineered for everyday comfort.'}
             </p>
 
-            <div className="pt-3">
+            <div className="pt-2 flex flex-wrap items-center gap-4">
               <Link
                 href="/shop"
-                className="group relative inline-flex items-center justify-center px-9 py-4 bg-white text-zinc-950 font-serif font-black uppercase tracking-[0.25em] text-xs transition-transform duration-200 ease-out transform active:scale-95 shadow-xl hover:bg-zinc-100 will-change-transform"
+                className="btn-brutal text-sm flex items-center space-x-3 group"
               >
-                <span className="relative z-10 flex items-center space-x-3">
-                  <span>Shop Collection</span>
-                  <ArrowRight className="w-4 h-4 transition-transform duration-200 ease-out group-hover:translate-x-1.5" />
-                </span>
+                <span>Shop Catalog Now</span>
+                <ArrowRight className="w-5 h-5 transition-transform duration-100 group-hover:translate-x-1" />
               </Link>
             </div>
 
-            {/* Micro Trust Specs */}
-            <div className="pt-6 border-t border-zinc-800/80 grid grid-cols-3 gap-4 text-xs font-mono text-zinc-400">
-              <div>
-                <span className="block text-white font-bold text-sm">100% Genuine</span>
-                <span className="text-[10px] text-zinc-500">Verified Quality</span>
+            {/* Micro Specs */}
+            <div className="pt-6 border-t-[2.5px] border-brutal grid grid-cols-3 gap-4 font-mono text-brutal">
+              <div className="bg-white p-3 border-[2px] border-brutal shadow-brutal-sm">
+                <span className="block font-black text-sm uppercase">100% Genuine</span>
+                <span className="text-[11px] text-brutal-muted font-medium">Verified Quality</span>
               </div>
-              <div>
-                <span className="block text-white font-bold text-sm">Cash on Delivery</span>
-                <span className="text-[10px] text-zinc-500">Nationwide Delivery</span>
+              <div className="bg-white p-3 border-[2px] border-brutal shadow-brutal-sm">
+                <span className="block font-black text-sm uppercase">Cash On Delivery</span>
+                <span className="text-[11px] text-brutal-muted font-medium">Nationwide</span>
               </div>
-              <div>
-                <span className="block text-white font-bold text-sm">Easy Sizing</span>
-                <span className="text-[10px] text-zinc-500">Accurate EU Fit</span>
+              <div className="bg-white p-3 border-[2px] border-brutal shadow-brutal-sm">
+                <span className="block font-black text-sm uppercase">Easy Sizing</span>
+                <span className="text-[11px] text-brutal-muted font-medium">Accurate EU Fit</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Right Hero Product Card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 relative will-change-transform"
-          >
-            <div className="relative mx-auto max-w-md lg:max-w-none aspect-[4/5] bg-zinc-950 overflow-hidden border border-zinc-800 shadow-2xl group">
+          {/* Right Hero Product Feature */}
+          <div className="lg:col-span-5 relative">
+            <div className="relative mx-auto max-w-md lg:max-w-none aspect-[4/5] bg-white border-[3.5px] border-brutal shadow-brutal-lg overflow-hidden group">
               <Image
                 src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=85"
                 alt="Featured Footwear"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                className="object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent opacity-70" />
 
-              {/* Floating Overlay Badge */}
-              <div className="absolute bottom-6 left-6 right-6 p-4 bg-[#121215]/90 backdrop-blur-md border border-zinc-800 shadow-xl flex items-center justify-between">
+              {/* Top Banner Tag */}
+              <div className="absolute top-4 left-4 bg-brutal-red text-white font-mono font-bold text-xs uppercase px-3 py-1 border-[2px] border-brutal shadow-brutal-sm rotate-[-2deg]">
+                HOT ITEM // BESTSELLER
+              </div>
+
+              {/* Floating Bottom Card */}
+              <div className="absolute bottom-4 left-4 right-4 p-4 bg-white border-[3px] border-brutal shadow-brutal flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-mono block">
-                    Featured Edition
+                  <span className="text-[10px] uppercase tracking-widest text-brutal-muted font-mono font-bold block">
+                    Featured Release
                   </span>
-                  <span className="text-sm font-serif font-bold text-white block mt-0.5">
-                    Nike Air Max 270 Supreme
+                  <span className="text-base font-black text-brutal uppercase block mt-0.5">
+                    Nike Air Max 270
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-mono font-bold text-white block">Rs. 14,999</span>
-                  <span className="text-[9px] uppercase tracking-wider text-emerald-400 font-mono">In Stock</span>
+                  <span className="text-sm font-mono font-black text-brutal bg-brutal-yellow px-2 py-1 border-[1.5px] border-brutal block">
+                    Rs. 14,999
+                  </span>
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
         </div>
       </div>
     </section>
   );
 }
-

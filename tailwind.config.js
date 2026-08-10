@@ -10,38 +10,41 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#09090b',
-        foreground: '#fafafa',
-        card: '#141417',
-        'card-foreground': '#fafafa',
-        primary: '#ffffff',
-        'primary-foreground': '#09090b',
-        secondary: '#27272a',
-        'secondary-foreground': '#fafafa',
-        muted: '#27272a',
-        'muted-foreground': '#a1a1aa',
-        accent: '#3f3f46',
-        'accent-foreground': '#fafafa',
-        border: '#27272a',
-        ring: '#d4d4d8',
+        // Neobrutalism palette
+        cream:   '#FFFBF0',
+        'cream-2': '#FFF8E7',
+        brutal:  '#0A0A0A',
+        'brutal-yellow': '#FFE600',
+        'brutal-blue':   '#0047FF',
+        'brutal-red':    '#FF2D2D',
+        'brutal-green':  '#00C853',
+        'brutal-muted':  '#3D3D3D',
+        // Keep some zinc for admin
+        background: '#FFFBF0',
+        foreground: '#0A0A0A',
       },
       fontFamily: {
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans:  ['Space Grotesk', 'system-ui', 'sans-serif'],
+        mono:  ['Space Mono', 'Menlo', 'Monaco', 'monospace'],
         serif: ['Georgia', 'Palatino', 'Times New Roman', 'serif'],
-        mono: ['Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'monospace'],
+      },
+      boxShadow: {
+        'brutal':    '4px 4px 0px #0A0A0A',
+        'brutal-lg': '6px 6px 0px #0A0A0A',
+        'brutal-sm': '2px 2px 0px #0A0A0A',
+        'brutal-yellow': '4px 4px 0px #FFE600',
+        'brutal-blue':   '4px 4px 0px #0047FF',
+        'brutal-red':    '4px 4px 0px #FF2D2D',
+        'brutal-pressed-sm': '2px 2px 0px #0A0A0A',
+        'none': 'none',
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.5s ease-out',
+        'marquee': 'marquee 18s linear infinite',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        marquee: {
+          '0%':   { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       },
     },
