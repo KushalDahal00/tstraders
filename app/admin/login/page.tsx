@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Lock, Mail, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
@@ -12,60 +12,37 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const DEMO_EMAIL = 'admin@tstraders.com';
-  const DEMO_PASSWORD = 'adminpassword123';
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     const supabase = createClient();
-    let supabaseSuccess = false;
 
-    // 1. Try Supabase Auth first if configured
-    if (supabase) {
-      try {
-        const { data, error: authError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (!authError && data?.session) {
-          supabaseSuccess = true;
-        }
-        // If Supabase fails, we fall through to demo credential check below
-      } catch {
-        // Supabase unavailable — fall through to demo mode
-      }
+    if (!supabase) {
+      setError('Supabase is not configured. Please check your environment variables.');
+      setLoading(false);
+      return;
     }
 
-    // 2. If Supabase didn't succeed, check demo credentials
-    if (!supabaseSuccess) {
-      const isDemoLogin =
-        email === DEMO_EMAIL && password === DEMO_PASSWORD;
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-      if (!isDemoLogin) {
-        setError(
-          'Invalid credentials. For demo access use: admin@tstraders.com / adminpassword123'
-        );
+      if (authError || !data?.session) {
+        setError(authError?.message || 'Invalid login credentials. Please try again.');
         setLoading(false);
         return;
       }
+
+      // Successful authentication
+      router.push('/admin/dashboard');
+    } catch (err: any) {
+      setError(err?.message || 'An unexpected error occurred during authentication.');
+      setLoading(false);
     }
-
-    // 3. Grant access (via Supabase session or demo localStorage session)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ts_admin_authenticated', 'true');
-      localStorage.setItem('ts_admin_email', email || DEMO_EMAIL);
-    }
-
-    router.push('/admin/dashboard');
-  };
-
-  const fillDemoAdmin = () => {
-    setEmail('admin@tstraders.com');
-    setPassword('adminpassword123');
   };
 
   return (
@@ -81,7 +58,7 @@ export default function AdminLoginPage() {
             T.S Traders Admin
           </h1>
           <p className="text-xs text-zinc-400">
-            Sign in to access inventory control & store management
+            Sign in with your Supabase administrator credentials
           </p>
         </div>
 
@@ -93,7 +70,7 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        {/* Login Form */}
+        {/* Real Supabase Login Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-1.5">
@@ -106,8 +83,8 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@tstraders.com"
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:border-zinc-500"
+                placeholder="your-admin-email@example.com"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:border-zinc-500 font-sans"
               />
             </div>
           </div>
@@ -124,7 +101,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:border-zinc-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 text-sm text-white focus:outline-none focus:border-zinc-500 font-sans"
               />
             </div>
           </div>
@@ -138,34 +115,6 @@ export default function AdminLoginPage() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Demo Fast Trigger */}
-        <div className="pt-4 border-t border-zinc-800 space-y-3">
-          <p className="text-center text-xs text-zinc-500 uppercase tracking-widest font-mono">
-            Demo Access Credentials
-          </p>
-          <div className="bg-zinc-900/80 border border-zinc-800 p-3 space-y-1.5 text-xs font-mono">
-            <div className="flex justify-between">
-              <span className="text-zinc-500">Email:</span>
-              <span className="text-zinc-200">admin@tstraders.com</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-500">Password:</span>
-              <span className="text-zinc-200">adminpassword123</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setEmail('admin@tstraders.com');
-              setPassword('adminpassword123');
-            }}
-            className="w-full inline-flex items-center justify-center space-x-1.5 py-2 bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 hover:text-white hover:border-zinc-500 font-mono transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Auto-Fill Demo Credentials</span>
-          </button>
-        </div>
 
       </div>
     </div>

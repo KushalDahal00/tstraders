@@ -27,6 +27,7 @@ export function AdminSidebar() {
     }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('ts_admin_authenticated');
+      localStorage.removeItem('ts_admin_email');
     }
     router.push('/admin/login');
   };

@@ -15,17 +15,27 @@ function getServiceClient() {
   });
 }
 
-// Simple admin auth guard — checks the custom header set by the client
-function isAdminAuthorized(req: NextRequest): boolean {
-  // We verify via a secret header that only our admin page sends.
-  // In production you'd validate a real JWT/session here.
+// Admin auth guard — checks Supabase JWT Bearer token or admin request header
+async function isAdminAuthorized(req: NextRequest): Promise<boolean> {
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    if (token) {
+      const supabase = getServiceClient();
+      if (supabase) {
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (!error && user) return true;
+      }
+    }
+  }
+
   const adminToken = req.headers.get('x-admin-token');
   return adminToken === 'ts-admin-authenticated';
 }
 
 // GET /api/admin/orders — fetch all orders (newest first)
 export async function GET(req: NextRequest) {
-  if (!isAdminAuthorized(req)) {
+  if (!(await isAdminAuthorized(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -48,7 +58,7 @@ export async function GET(req: NextRequest) {
 
 // PATCH /api/admin/orders — update a single order's status
 export async function PATCH(req: NextRequest) {
-  if (!isAdminAuthorized(req)) {
+  if (!(await isAdminAuthorized(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -50,12 +50,22 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'bg-rose-950 text-rose-400 border-rose-800', icon: XCircle },
 };
 
-/** Admin-authenticated fetch helper — sends the secret header to the API route */
+import { createClient } from '@/lib/supabase/client';
+
+/** Admin-authenticated fetch helper — sends Supabase session token + admin header */
 async function adminFetch(input: RequestInfo, init: RequestInit = {}) {
+  let token = '';
+  const supabase = createClient();
+  if (supabase) {
+    const { data } = await supabase.auth.getSession();
+    token = data.session?.access_token || '';
+  }
+
   return fetch(input, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
       'x-admin-token': 'ts-admin-authenticated',
       ...(init.headers ?? {}),
     },

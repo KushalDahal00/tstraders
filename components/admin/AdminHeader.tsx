@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
-import { User, Bell, Search, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { User, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 interface AdminHeaderProps {
   title: string;
@@ -10,6 +11,21 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ title, subtitle }: AdminHeaderProps) {
+  const [adminEmail, setAdminEmail] = useState<string>('admin@tstraders.com');
+
+  useEffect(() => {
+    async function loadAdminProfile() {
+      const supabase = createClient();
+      if (supabase) {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user?.email) {
+          setAdminEmail(data.user.email);
+        }
+      }
+    }
+    loadAdminProfile();
+  }, []);
+
   return (
     <header className="bg-[#0e0e11] border-b border-zinc-800 px-8 py-5 flex items-center justify-between sticky top-0 z-40">
       <div>
@@ -35,7 +51,7 @@ export function AdminHeader({ title, subtitle }: AdminHeaderProps) {
           </div>
           <div className="hidden md:block">
             <p className="text-xs font-semibold text-white">Administrator</p>
-            <p className="text-[10px] text-zinc-400 font-mono">admin@tstraders.com</p>
+            <p className="text-[10px] text-zinc-400 font-mono">{adminEmail}</p>
           </div>
         </div>
       </div>

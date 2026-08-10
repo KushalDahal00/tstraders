@@ -24,24 +24,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       if (supabase) {
         const { data } = await supabase.auth.getSession();
-        if (data.session) {
+        if (data?.session) {
           setAuthorized(true);
           setLoading(false);
           return;
         }
       }
 
-      // Check local storage authorization fallback for demo execution
-      if (typeof window !== 'undefined') {
-        const localAuth = localStorage.getItem('ts_admin_authenticated');
-        if (localAuth === 'true') {
-          setAuthorized(true);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Unauthorized -> redirect to login
+      // Unauthorized -> redirect to login page
+      setAuthorized(false);
+      setLoading(false);
       router.push('/admin/login');
     }
 
