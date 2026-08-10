@@ -4,6 +4,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { CartProvider } from '@/lib/CartContext';
 import { CartDrawer } from '@/components/CartDrawer';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: 'T.S Traders | Premium Footwear Retailer',
@@ -30,6 +31,7 @@ export default function RootLayout({
           <CartDrawer />
           <Footer />
         </CartProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
