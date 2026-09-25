@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { User, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { OrderNotificationBell } from './OrderNotificationBell';
 
 interface AdminHeaderProps {
   title: string;
@@ -44,6 +45,8 @@ export function AdminHeader({ title, subtitle }: AdminHeaderProps) {
           <span>Live Storefront</span>
           <ExternalLink className="w-3 h-3" />
         </Link>
+
+        <OrderNotificationBell />
 
         <div className="flex items-center space-x-3 border-l border-zinc-800 pl-4">
           <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-white border border-zinc-700">

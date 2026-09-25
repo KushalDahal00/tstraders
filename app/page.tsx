@@ -4,21 +4,19 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Hero } from '@/components/Hero';
-import { ProductCard } from '@/components/ProductCard';
-import { getProducts, getCategories } from '@/lib/store';
-import { Product, Category } from '@/lib/types';
+
+import { getCategories } from '@/lib/store';
+import { Category } from '@/lib/types';
 import { ArrowRight, ShieldCheck, Sparkles, Footprints, Truck } from 'lucide-react';
 
 export default function LandingPage() {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      const [prods, cats] = await Promise.all([getProducts(), getCategories()]);
-      const featured = prods.filter((p) => p.featured && p.status === 'published');
-      setFeaturedProducts(featured.length >= 4 ? featured.slice(0, 4) : prods.slice(0, 4));
+      const cats = await getCategories();
       setCategories(cats);
       setLoading(false);
     }
@@ -94,40 +92,7 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* Featured Showcase Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between space-y-3 md:space-y-0 pb-4 border-b-[3px] border-brutal">
-          <div>
-            <span className="text-xs uppercase font-mono font-black text-brutal-muted">
-              // Curated Selection
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-brutal tracking-tight uppercase mt-0.5">
-              Featured Footwear
-            </h2>
-          </div>
-          <Link
-            href="/shop"
-            className="btn-brutal text-xs inline-flex items-center space-x-2"
-          >
-            <span>View Full Catalog</span>
-            <ArrowRight className="w-4 h-4 stroke-[3]" />
-          </Link>
-        </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white aspect-[3/4] animate-pulse border-[3px] border-brutal neo-shadow" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </section>
 
       {/* Editorial Banner Showcase */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

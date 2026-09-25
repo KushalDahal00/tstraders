@@ -36,6 +36,14 @@ function ShopContent() {
     loadShopData();
   }, []);
 
+  // Sync URL ?category= param into filter state whenever it changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: categoryParam,
+    }));
+  }, [categoryParam]);
+
   // Dynamically extract all available unique shoe sizes across products
   const availableSizes = useMemo(() => {
     const sizeSet = new Set<number>();
@@ -73,7 +81,7 @@ function ShopContent() {
           (c) => c.slug === filters.category || c.id === filters.category
         );
         const categoryIdToMatch = matchedCategory ? matchedCategory.id : filters.category;
-        if (p.category_id !== categoryIdToMatch && p.slug !== filters.category) {
+        if (p.category_id !== categoryIdToMatch) {
           return false;
         }
       }

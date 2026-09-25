@@ -79,6 +79,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [newOrderToast, setNewOrderToast] = useState<string | null>(null);
 
   async function loadOrders() {
     setLoading(true);
@@ -100,12 +101,40 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     loadOrders();
 
-    // Auto-refresh every 30 seconds so new orders appear without manual reload
+    // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
       loadOrders();
     }, 30000);
 
-    return () => clearInterval(interval);
+    // Supabase Realtime — instantly push new orders into list
+    const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    if (supabase) {
+      channel = supabase
+        .channel('admin-orders-live')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'orders' },
+          (payload) => {
+            const newOrder = payload.new as DBOrder;
+            setOrders((prev) => {
+              // Avoid duplicates
+              if (prev.some((o) => o.id === newOrder.id)) return prev;
+              return [newOrder, ...prev];
+            });
+            setLastRefreshed(new Date());
+            // Show toast banner for 5 seconds
+            setNewOrderToast(`New order from ${newOrder.customer_name}!`);
+            setTimeout(() => setNewOrderToast(null), 5000);
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (supabase && channel) supabase.removeChannel(channel);
+    };
   }, []);
 
   const updateStatus = async (orderId: string, newStatus: DBOrder['status']) => {
@@ -143,6 +172,17 @@ export default function AdminOrdersPage() {
         title="Orders Management"
         subtitle="View and manage all customer orders placed via Cash on Delivery"
       />
+
+      {/* New Order Toast */}
+      {newOrderToast && (
+        <div className="fixed top-6 right-6 z-[9999] flex items-center space-x-3 bg-amber-500 text-zinc-950 px-5 py-3 shadow-2xl border-2 border-amber-400 animate-[slideInRight_0.35s_ease-out]">
+          <ShoppingBag className="w-4 h-4 shrink-0" />
+          <span className="text-sm font-bold font-mono">{newOrderToast}</span>
+          <button onClick={() => setNewOrderToast(null)} className="ml-2 hover:opacity-70">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <div className="px-8 space-y-6">
 
