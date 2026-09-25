@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { getCategories, getProductBySlugOrId, saveProduct } from '@/lib/store';
 import { Category, Product, ProductSize } from '@/lib/types';
-import { ArrowLeft, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, AlertCircle, Upload, Loader2 } from 'lucide-react';
 
 const STANDARD_SIZES = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45];
 
@@ -37,6 +37,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -75,6 +77,45 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setImages((prev) => prev.filter((i) => i !== img));
     if (mainImage === img) {
       setMainImage(images.find((i) => i !== img) || '');
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    setErrorMessage(null);
+
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setErrorMessage(data.error || 'Upload failed');
+          break;
+        }
+
+        setImages((prev) => {
+          const next = [...prev, data.url];
+          if (!mainImage) setMainImage(data.url);
+          return next;
+        });
+        if (!mainImage) setMainImage(data.url);
+      }
+    } catch {
+      setErrorMessage('Failed to upload image. Please try again.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -299,9 +340,44 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               3. Product Images
             </h3>
 
-            <div className="space-y-3">
+            {/* Upload from device */}
+            <div className="space-y-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Add Image URL
+                Upload from Device
+              </label>
+              <div
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                className={`flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-zinc-700 bg-zinc-900/50 cursor-pointer hover:border-zinc-500 hover:bg-zinc-900 transition-colors ${
+                  uploading ? 'opacity-60 cursor-not-allowed' : ''
+                }`}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-6 h-6 text-zinc-400 animate-spin" />
+                    <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-6 h-6 text-zinc-400" />
+                    <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Click to upload image(s)</span>
+                    <span className="text-[10px] text-zinc-600">JPEG, PNG, WebP or GIF · Max 5MB each</span>
+                  </>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+
+            {/* Or add by URL */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                Or Add by URL
               </label>
               <div className="flex space-x-2">
                 <input
@@ -316,7 +392,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   onClick={handleAddImage}
                   className="px-4 py-2 bg-zinc-800 border border-zinc-700 text-white font-bold text-xs uppercase tracking-wider hover:bg-zinc-700"
                 >
-                  Add Image
+                  Add
                 </button>
               </div>
             </div>

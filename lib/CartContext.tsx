@@ -123,12 +123,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       created_at: new Date().toISOString(),
     };
 
-    // Save order to Supabase
+    // Save order via API route (uses service-role key — bypasses RLS reliably)
     try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-      if (supabase) {
-        await supabase.from('orders').insert({
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           id: orderId,
           customer_name: details.fullName,
           customer_email: details.email,
@@ -148,14 +148,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             subtotal: (item.product.discount_price ?? item.product.price) * item.quantity,
           })),
           total_amount: totalAmount,
-          status: 'pending',
-        });
+        }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        console.error('Failed to save order via API:', json.error || res.statusText);
       }
     } catch (err) {
-      console.error('Failed to save order to Supabase, saving locally:', err);
+      console.error('Failed to save order to Supabase via API:', err);
     }
 
-    // Always also save to localStorage as backup
+    // Also save to localStorage as local backup
     if (typeof window !== 'undefined') {
       const existingOrdersRaw = localStorage.getItem('ts_orders');
       const existingOrders: Order[] = existingOrdersRaw ? JSON.parse(existingOrdersRaw) : [];

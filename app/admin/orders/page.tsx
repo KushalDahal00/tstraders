@@ -78,6 +78,7 @@ export default function AdminOrdersPage() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   async function loadOrders() {
     setLoading(true);
@@ -86,6 +87,7 @@ export default function AdminOrdersPage() {
       const json = await res.json();
       if (res.ok && json.orders) {
         setOrders(json.orders as DBOrder[]);
+        setLastRefreshed(new Date());
       } else {
         console.error('Failed to load orders:', json.error);
       }
@@ -95,7 +97,16 @@ export default function AdminOrdersPage() {
     setLoading(false);
   }
 
-  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => {
+    loadOrders();
+
+    // Auto-refresh every 30 seconds so new orders appear without manual reload
+    const interval = setInterval(() => {
+      loadOrders();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const updateStatus = async (orderId: string, newStatus: DBOrder['status']) => {
     setUpdatingId(orderId);
@@ -153,13 +164,21 @@ export default function AdminOrdersPage() {
               </button>
             ))}
           </div>
-          <button
-            onClick={loadOrders}
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors font-mono"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            {lastRefreshed && (
+              <span className="text-[10px] font-mono text-zinc-600">
+                Updated {lastRefreshed.toLocaleTimeString('en-NP', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            )}
+            <button
+              onClick={loadOrders}
+              disabled={loading}
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors font-mono disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Row */}

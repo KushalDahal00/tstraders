@@ -4,6 +4,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { CartProvider } from '@/lib/CartContext';
 import { CartDrawer } from '@/components/CartDrawer';
+import { ClickSound } from '@/components/ClickSound';
 
 export const metadata: Metadata = {
   title: 'T.S Traders | Premium Footwear Retailer',
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-cream text-brutal min-h-screen flex flex-col antialiased selection:bg-[#FFE600] selection:text-brutal">
+        <ClickSound />
         <CartProvider>
           <Navbar />
           <main className="flex-1">{children}</main>
