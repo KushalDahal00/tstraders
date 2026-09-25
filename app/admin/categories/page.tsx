@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { getCategories, saveCategory, deleteCategory } from '@/lib/store';
+import Image from 'next/image';
+import { getCategories, saveCategory, deleteCategory, getCategoryImage } from '@/lib/store';
 import { Category } from '@/lib/types';
 import {
   FolderTree,
@@ -15,6 +16,7 @@ import {
   AlertCircle,
   Save,
   ChevronDown,
+  ImageIcon,
 } from 'lucide-react';
 
 interface CategoryForm {
@@ -22,9 +24,10 @@ interface CategoryForm {
   name: string;
   slug: string;
   description: string;
+  image_url: string;
 }
 
-const emptyForm: CategoryForm = { name: '', slug: '', description: '' };
+const emptyForm: CategoryForm = { name: '', slug: '', description: '', image_url: '' };
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -85,6 +88,7 @@ export default function AdminCategoriesPage() {
       name: cat.name,
       slug: cat.slug,
       description: cat.description || '',
+      image_url: cat.image_url || '',
     });
     setEditingId(cat.id);
     setFormError(null);
@@ -126,6 +130,7 @@ export default function AdminCategoriesPage() {
         name: form.name.trim(),
         slug: form.slug.trim(),
         description: form.description.trim(),
+        image_url: form.image_url.trim() || undefined,
       });
       await loadData();
       closeForm();
@@ -247,6 +252,31 @@ export default function AdminCategoriesPage() {
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1 flex items-center space-x-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Category Image URL</span>
+                </label>
+                <input
+                  type="url"
+                  value={form.image_url}
+                  onChange={(e) => setForm((p) => ({ ...p, image_url: e.target.value }))}
+                  placeholder="https://images.unsplash.com/... (optional fallback auto-assigned)"
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-zinc-500 font-mono"
+                />
+                {form.image_url && (
+                  <div className="mt-2 relative w-20 h-14 bg-zinc-900 border border-zinc-700 overflow-hidden">
+                    <Image
+                      src={form.image_url}
+                      alt="Preview"
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="md:col-span-2 flex items-center justify-end space-x-3 pt-2">
                 <button
                   type="button"
@@ -281,25 +311,34 @@ export default function AdminCategoriesPage() {
             </div>
           ) : (
             categories.map((cat) => (
-              <div key={cat.id} className="p-6 bg-[#141417] border border-zinc-800 space-y-3 group hover:border-zinc-700 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 min-w-0">
-                    <Tag className="w-4 h-4 text-zinc-400 flex-shrink-0" />
-                    <h3 className="text-base font-bold text-white uppercase tracking-wider font-serif truncate">
-                      {cat.name}
-                    </h3>
+              <div key={cat.id} className="p-6 bg-[#141417] border border-zinc-800 space-y-4 group hover:border-zinc-700 transition-colors">
+                <div className="flex items-start space-x-4">
+                  <div className="relative w-16 h-16 rounded border border-zinc-700/80 bg-zinc-900 overflow-hidden flex-shrink-0">
+                    <Image
+                      src={cat.image_url || getCategoryImage(cat)}
+                      alt={cat.name}
+                      fill
+                      sizes="64px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 bg-zinc-900 border border-zinc-800 text-zinc-400 flex-shrink-0">
-                    /{cat.slug}
-                  </span>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-bold text-white uppercase tracking-wider font-serif truncate">
+                        {cat.name}
+                      </h3>
+                      <span className="text-[10px] font-mono px-2 py-0.5 bg-zinc-900 border border-zinc-800 text-zinc-400 flex-shrink-0">
+                        /{cat.slug}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-light line-clamp-2">
+                      {cat.description || 'No description provided.'}
+                    </p>
+                  </div>
                 </div>
 
-                <p className="text-xs text-zinc-400 leading-relaxed font-light">
-                  {cat.description || 'No description provided.'}
-                </p>
-
                 {/* Actions */}
-                <div className="flex items-center space-x-2 pt-1 border-t border-zinc-800/60">
+                <div className="flex items-center space-x-2 pt-2 border-t border-zinc-800/60">
                   <button
                     onClick={() => openEditForm(cat)}
                     className="flex-1 inline-flex items-center justify-center space-x-1.5 py-1.5 bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"

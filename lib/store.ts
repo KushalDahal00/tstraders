@@ -9,16 +9,70 @@ const LS_CATEGORIES_KEY = 'ts_traders_categories';
 const LS_LOGS_KEY = 'ts_traders_logs';
 const LS_SETTINGS_KEY = 'ts_traders_settings';
 
+export const CATEGORY_IMAGE_MAP: Record<string, string> = {
+  sneakers: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80',
+  running: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80',
+  casual: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&q=80',
+  formal: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&q=80',
+  sports: 'https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&q=80',
+  boots: 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=800&q=80',
+};
+
+export function getCategoryImage(cat: { slug?: string; name?: string; image_url?: string }): string {
+  if (cat.image_url && cat.image_url.trim()) return cat.image_url;
+  const key = `${cat.slug || ''} ${cat.name || ''}`.toLowerCase();
+  for (const [k, url] of Object.entries(CATEGORY_IMAGE_MAP)) {
+    if (key.includes(k)) return url;
+  }
+  return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80';
+}
+
 // ====================================================
 // DEFAULT SEED DATA
 // ====================================================
 export const INITIAL_CATEGORIES: Category[] = [
-  { id: 'cat-1', name: 'Sneakers', slug: 'sneakers', description: 'Modern lifestyle and streetwear sneakers' },
-  { id: 'cat-2', name: 'Running', slug: 'running', description: 'High performance running and training shoes' },
-  { id: 'cat-3', name: 'Casual', slug: 'casual', description: 'Everyday comfortable slip-ons and loafers' },
-  { id: 'cat-4', name: 'Formal', slug: 'formal', description: 'Handcrafted leather oxfords and derby shoes' },
-  { id: 'cat-5', name: 'Sports', slug: 'sports', description: 'Athletic footwear for court and field' },
-  { id: 'cat-6', name: 'Boots', slug: 'boots', description: 'Durable leather and tactical boots' },
+  {
+    id: 'cat-1',
+    name: 'Sneakers',
+    slug: 'sneakers',
+    description: 'Modern lifestyle and streetwear sneakers',
+    image_url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'cat-2',
+    name: 'Running',
+    slug: 'running',
+    description: 'High performance running and training shoes',
+    image_url: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'cat-3',
+    name: 'Casual',
+    slug: 'casual',
+    description: 'Everyday comfortable slip-ons and loafers',
+    image_url: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'cat-4',
+    name: 'Formal',
+    slug: 'formal',
+    description: 'Handcrafted leather oxfords and derby shoes',
+    image_url: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'cat-5',
+    name: 'Sports',
+    slug: 'sports',
+    description: 'Athletic footwear for court and field',
+    image_url: 'https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    id: 'cat-6',
+    name: 'Boots',
+    slug: 'boots',
+    description: 'Durable leather and tactical boots',
+    image_url: 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=800&q=80',
+  },
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
@@ -371,7 +425,11 @@ function setMemoryProducts(products: Product[]): void {
 
 function getMemoryCategories(): Category[] {
   if (_categories === null) {
-    _categories = lsGet<Category[]>(LS_CATEGORIES_KEY, [...INITIAL_CATEGORIES]);
+    const raw = lsGet<Category[]>(LS_CATEGORIES_KEY, [...INITIAL_CATEGORIES]);
+    _categories = raw.map((c) => ({
+      ...c,
+      image_url: c.image_url || getCategoryImage(c),
+    }));
   }
   return _categories;
 }
@@ -661,15 +719,22 @@ export async function getCategories(): Promise<Category[]> {
     try {
       const { data, error } = await supabase.from('categories').select('*');
       if (!error && data && data.length > 0) {
-        setMemoryCategories(data);
-        return data;
+        const enriched = data.map((c) => ({
+          ...c,
+          image_url: c.image_url || getCategoryImage(c),
+        }));
+        setMemoryCategories(enriched);
+        return enriched;
       }
     } catch (e) {
       console.warn('Fallback categories lookup:', e);
     }
   }
 
-  return getMemoryCategories();
+  return getMemoryCategories().map((c) => ({
+    ...c,
+    image_url: c.image_url || getCategoryImage(c),
+  }));
 }
 
 export async function saveCategory(categoryData: Partial<Category>): Promise<Category> {
@@ -690,6 +755,7 @@ export async function saveCategory(categoryData: Partial<Category>): Promise<Cat
     name: categoryData.name || 'New Category',
     slug,
     description: categoryData.description || '',
+    image_url: categoryData.image_url || getCategoryImage({ slug, name: categoryData.name }),
     created_at: categoryData.created_at || now,
   };
 
@@ -703,13 +769,15 @@ export async function saveCategory(categoryData: Partial<Category>): Promise<Cat
           name: fullCategory.name,
           slug: fullCategory.slug,
           description: fullCategory.description,
+          image_url: fullCategory.image_url,
         })
         .select()
         .single();
 
       if (!error && data) {
-        _updateLocalCategory(data, isEdit);
-        return data;
+        const enriched = { ...data, image_url: data.image_url || fullCategory.image_url };
+        _updateLocalCategory(enriched, isEdit);
+        return enriched;
       }
     } catch (e) {
       console.warn('Supabase category save failed, using local store:', e);

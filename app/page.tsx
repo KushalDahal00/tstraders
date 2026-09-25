@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Hero } from '@/components/Hero';
 
-import { getCategories } from '@/lib/store';
+import { getCategories, getCategoryImage } from '@/lib/store';
 import { Category } from '@/lib/types';
 import { ArrowRight, ShieldCheck, Sparkles, Footprints, Truck } from 'lucide-react';
 
@@ -23,7 +23,7 @@ export default function LandingPage() {
     loadData();
   }, []);
 
-  const categoryColors = [
+  const categoryTagColors = [
     'bg-brutal-yellow text-brutal',
     'bg-brutal-blue text-white',
     'bg-brutal-red text-white',
@@ -58,32 +58,52 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {categories.map((cat, idx) => {
-              const bgClass = categoryColors[idx % categoryColors.length];
+              const tagClass = categoryTagColors[idx % categoryTagColors.length];
+              const imageUrl = cat.image_url || getCategoryImage(cat);
+
               return (
                 <Link
                   key={cat.id}
                   href={`/shop?category=${cat.slug}`}
-                  className={`group relative aspect-[4/3] border-[3px] border-brutal neo-shadow neo-press overflow-hidden flex flex-col justify-end p-5 ${bgClass}`}
+                  className="group relative aspect-[3/4] sm:aspect-[4/5] bg-zinc-950 border-[3px] border-brutal neo-shadow neo-press overflow-hidden flex flex-col justify-between p-4 transition-all duration-300"
                 >
-                  {cat.image_url && (
-                    <Image
-                      src={cat.image_url}
-                      alt={cat.name}
-                      fill
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-300 opacity-40 mix-blend-multiply"
-                    />
-                  )}
-                  <div className="relative z-10 space-y-1">
-                    <h3 className="text-base sm:text-lg font-black uppercase tracking-wider bg-white text-brutal px-2 py-0.5 border-[2px] border-brutal inline-block neo-shadow-sm">
+                  {/* Category Shoe Image */}
+                  <Image
+                    src={imageUrl}
+                    alt={cat.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                    className="object-cover object-center group-hover:scale-110 transition-transform duration-500 ease-out"
+                  />
+
+                  {/* Gradient Overlay for high readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/95 group-hover:via-black/50 transition-colors" />
+
+                  {/* Top Badge */}
+                  <div className="relative z-10 flex items-center justify-between">
+                    <span className={`text-[10px] font-mono font-black uppercase tracking-wider px-2 py-0.5 border-[2px] border-brutal neo-shadow-sm ${tagClass}`}>
+                      0{idx + 1}
+                    </span>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono font-bold uppercase tracking-wider bg-black/80 text-white px-1.5 py-0.5 border border-white/20 backdrop-blur-sm">
+                      View
+                    </span>
+                  </div>
+
+                  {/* Bottom Info & Action */}
+                  <div className="relative z-10 space-y-1.5">
+                    <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-white drop-shadow-md group-hover:text-brutal-yellow transition-colors leading-tight">
                       {cat.name}
                     </h3>
-                    <p className="text-[11px] font-mono font-bold uppercase tracking-widest flex items-center space-x-1 mt-1 text-brutal">
-                      <span>Explore</span>
-                      <ArrowRight className="w-3.5 h-3.5 stroke-[3] transition-transform group-hover:translate-x-1" />
-                    </p>
+                    <div className="flex items-center justify-between pt-0.5">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors">
+                        Explore
+                      </span>
+                      <span className="w-6 h-6 bg-brutal-yellow text-brutal border-[2px] border-brutal flex items-center justify-center neo-shadow-sm group-hover:bg-white group-hover:translate-x-1 transition-all">
+                        <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
+                      </span>
+                    </div>
                   </div>
                 </Link>
               );

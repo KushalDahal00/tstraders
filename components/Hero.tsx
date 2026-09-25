@@ -65,10 +65,35 @@ export function Hero() {
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <Link
                 href="/shop"
-                className="btn-brutal text-sm flex items-center space-x-3 group"
+                className="relative overflow-hidden text-sm flex items-center space-x-3 group px-7 py-3.5 font-black uppercase tracking-widest text-white"
+                style={{
+                  background: 'linear-gradient(135deg, #FF4D00 0%, #FF0080 50%, #7B2FFF 100%)',
+                  border: '2.5px solid #0A0A0A',
+                  boxShadow: '4px 4px 0px #0A0A0A, 0 0 24px rgba(255, 77, 0, 0.5)',
+                  transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = 'translate(2px, 2px)';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '2px 2px 0px #0A0A0A, 0 0 32px rgba(255, 0, 128, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = '';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '4px 4px 0px #0A0A0A, 0 0 24px rgba(255, 77, 0, 0.5)';
+                }}
               >
-                <span>Shop Catalog Now</span>
-                <ArrowRight className="w-5 h-5 transition-transform duration-100 group-hover:translate-x-1" />
+                {/* Shimmer sweep */}
+                <span
+                  className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                  }}
+                />
+                {/* Pulse ring */}
+                <span className="absolute inset-0 rounded-sm animate-ping opacity-20"
+                  style={{ background: 'linear-gradient(135deg, #FF4D00, #FF0080)' }}
+                />
+                <span className="relative z-10">Shop Catalog Now</span>
+                <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-100 group-hover:translate-x-1" />
               </Link>
             </div>
 
